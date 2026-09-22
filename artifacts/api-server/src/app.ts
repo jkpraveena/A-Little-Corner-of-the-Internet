@@ -1,4 +1,5 @@
 import express, { type Express } from "express";
+import path from "node:path";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import cookieParser from "cookie-parser";
@@ -32,5 +33,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+const frontendPath = path.resolve(
+  process.cwd(),
+  "artifacts/birthday-corner/dist/public",
+);
+
+app.use(express.static(frontendPath));
+
+app.get("/{*splat}", (_req, res) => {
+  res.sendFile(path.join(frontendPath, "index.html"));
+});
 
 export default app;
