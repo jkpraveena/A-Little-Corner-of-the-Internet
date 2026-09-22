@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "A Little Corner of the Internet"
+description = "A private, persistent birthday time capsule with a password gate, personal snapshots, future letters, memories, and open-when messages."
+version = "1.0.0"
+id = "artifacts/birthday-corner"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23791
+
+[services.development]
+run = "pnpm --filter @workspace/birthday-corner run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/birthday-corner", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/birthday-corner/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23791"
+BASE_PATH = "/"

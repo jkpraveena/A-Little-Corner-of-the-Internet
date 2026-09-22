@@ -1,0 +1,1 @@
+- [Shared client TypeScript build](typescript-client-build.md) — generated fetch helpers need iterable DOM types enabled.

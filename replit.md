@@ -1,6 +1,6 @@
-# [Project name]
+# A Little Corner of the Internet
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A private, password-gated birthday time capsule with a persistent snapshot, future letter, memories, and open-when messages.
 
 ## Run & Operate
 
@@ -22,15 +22,21 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/birthday-corner` — responsive React/Vite experience
+- `artifacts/api-server/src/routes` — authenticated API routes
+- `artifacts/api-server/src/lib/seed-content.ts` — replace sample name, birthday date, memories, open-when letters, final letter, and birthday message before sharing
+- `lib/db/src/schema/birthday.ts` — PostgreSQL schema
+- `lib/api-spec/openapi.yaml` — API source of truth
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The birthday person's single password is verified server-side from `BIRTHDAY_PASSWORD`; the browser only receives a short-lived HTTP-only session cookie.
+- Snapshot and future-letter writes are final and server-guarded against duplicate saves.
+- Uploaded media uses private App Storage objects; PostgreSQL stores only metadata and object paths.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+The app opens with a private password gate, then unfolds as a single scrolling keepsake experience. It stores the once-only current snapshot and future letter in PostgreSQL, serves seeded memories and letters from PostgreSQL, and calculates the next birthday countdown from the stored date.
 
 ## User preferences
 

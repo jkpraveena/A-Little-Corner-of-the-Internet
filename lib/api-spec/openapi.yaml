@@ -3,13 +3,23 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Private birthday time capsule API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Password-gated session operations
+  - name: content
+    description: Birthday time capsule content
+  - name: snapshot
+    description: The once-only current snapshot
+  - name: future
+    description: Future letter operations
+  - name: storage
+    description: Protected media uploads
 paths:
   /healthz:
     get:
@@ -24,6 +34,152 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/session:
+    get:
+      operationId: getSession
+      tags: [auth]
+      summary: Check the private session
+      responses:
+        "200":
+          description: Session state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+  /auth/unlock:
+    post:
+      operationId: unlock
+      tags: [auth]
+      summary: Unlock the private website
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnlockInput"
+      responses:
+        "200":
+          description: Authenticated session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "401":
+          description: Incorrect password
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: End the private session
+      responses:
+        "204":
+          description: Session ended
+  /content:
+    get:
+      operationId: getSiteContent
+      tags: [content]
+      summary: Load the birthday time capsule
+      responses:
+        "200":
+          description: Time capsule content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteContent"
+        "401":
+          description: Authentication required
+  /snapshot:
+    get:
+      operationId: getSnapshot
+      tags: [snapshot]
+      summary: Get the saved snapshot, if one exists
+      responses:
+        "200":
+          description: Saved snapshot or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Snapshot"
+        "401":
+          description: Authentication required
+    post:
+      operationId: saveSnapshot
+      tags: [snapshot]
+      summary: Save the once-only current snapshot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SnapshotInput"
+      responses:
+        "201":
+          description: Saved snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Snapshot"
+        "409":
+          description: Snapshot already saved
+        "401":
+          description: Authentication required
+  /future-letter:
+    get:
+      operationId: getFutureLetter
+      tags: [future]
+      summary: Get the saved future letter, if one exists
+      responses:
+        "200":
+          description: Future letter or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FutureLetter"
+        "401":
+          description: Authentication required
+    post:
+      operationId: saveFutureLetter
+      tags: [future]
+      summary: Save a once-only future letter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FutureLetterInput"
+      responses:
+        "201":
+          description: Saved future letter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FutureLetter"
+        "409":
+          description: Future letter already saved
+        "401":
+          description: Authentication required
+  /storage/uploads/request-url:
+    post:
+      operationId: requestUploadUrl
+      tags: [storage]
+      summary: Request a private object upload URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadInput"
+      responses:
+        "200":
+          description: Presigned upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+        "400":
+          description: Invalid file
+        "401":
+          description: Authentication required
 components:
   schemas:
     HealthStatus:
@@ -33,4 +189,204 @@ components:
           type: string
       required:
         - status
+    UnlockInput:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
+          minLength: 1
+    Session:
+      type: object
+      required: [authenticated]
+      properties:
+        authenticated:
+          type: boolean
+    SiteContent:
+      type: object
+      required:
+        - config
+        - memories
+        - openWhen
+        - finalLetter
+        - birthdayMessage
+      properties:
+        config:
+          $ref: "#/components/schemas/SiteConfig"
+        memories:
+          type: array
+          items:
+            $ref: "#/components/schemas/Memory"
+        openWhen:
+          type: array
+          items:
+            $ref: "#/components/schemas/OpenWhenLetter"
+        finalLetter:
+          type: string
+        birthdayMessage:
+          type: string
+    SiteConfig:
+      type: object
+      required: [personName, birthdayDate, introText]
+      properties:
+        personName:
+          type: string
+        birthdayDate:
+          type: string
+          format: date
+        introText:
+          type: string
+    Memory:
+      type: object
+      required: [id, title, description, memoryDate, displayOrder]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        memoryDate:
+          type: ["string", "null"]
+          format: date
+        displayOrder:
+          type: integer
+    OpenWhenLetter:
+      type: object
+      required: [id, title, message, displayOrder]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        message:
+          type: string
+        displayOrder:
+          type: integer
+    SnapshotAnswer:
+      type: object
+      required: [questionKey, questionText, answer]
+      properties:
+        questionKey:
+          type: string
+        questionText:
+          type: string
+        answer:
+          type: string
+        media:
+          type: array
+          items:
+            $ref: "#/components/schemas/Media"
+    Media:
+      type: object
+      required: [id, section, originalFilename, mimeType, size, objectPath]
+      properties:
+        id:
+          type: integer
+        section:
+          type: string
+        originalFilename:
+          type: string
+        mimeType:
+          type: string
+        size:
+          type: integer
+        objectPath:
+          type: string
+    Snapshot:
+      type: object
+      required: [id, isFinal, completedAt, answers]
+      properties:
+        id:
+          type: integer
+        isFinal:
+          type: boolean
+        completedAt:
+          type: ["string", "null"]
+          format: date-time
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/SnapshotAnswer"
+    SnapshotInput:
+      type: object
+      required: [answers]
+      properties:
+        answers:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/SnapshotAnswerInput"
+    SnapshotAnswerInput:
+      type: object
+      required: [questionKey, questionText, answer]
+      properties:
+        questionKey:
+          type: string
+          minLength: 1
+        questionText:
+          type: string
+          minLength: 1
+        answer:
+          type: string
+        media:
+          type: array
+          items:
+            $ref: "#/components/schemas/MediaInput"
+    MediaInput:
+      type: object
+      required: [originalFilename, mimeType, size, objectPath, section]
+      properties:
+        originalFilename:
+          type: string
+        mimeType:
+          type: string
+        size:
+          type: integer
+        objectPath:
+          type: string
+        section:
+          type: string
+    FutureLetter:
+      type: object
+      required: [id, letter, targetDate, isFinal]
+      properties:
+        id:
+          type: integer
+        letter:
+          type: string
+        targetDate:
+          type: string
+          format: date
+        isFinal:
+          type: boolean
+    FutureLetterInput:
+      type: object
+      required: [letter]
+      properties:
+        letter:
+          type: string
+          minLength: 1
+    UploadInput:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+        size:
+          type: integer
+          minimum: 1
+        contentType:
+          type: string
+    UploadResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+          format: uri
+        objectPath:
+          type: string
 
