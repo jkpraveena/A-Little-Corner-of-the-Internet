@@ -35,7 +35,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api", router);
 const frontendPath = path.resolve(
   process.cwd(),
-  "artifacts/birthday-corner/dist/public",
+  "../birthday-corner/dist/public",
 );
 
 app.use(express.static(frontendPath));
