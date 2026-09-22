@@ -8,26 +8,201 @@ import { sampleContent } from "../lib/seed-content";
 const router: IRouter = Router();
 
 async function ensureContent(): Promise<void> {
-  const [config] = await db.select({ id: siteConfigTable.id }).from(siteConfigTable).limit(1);
+  // ─────────────────────────────────────────────
+  // CONFIG
+  // ─────────────────────────────────────────────
+  const [config] = await db
+    .select({ id: siteConfigTable.id })
+    .from(siteConfigTable)
+    .limit(1);
+
   if (!config) {
     await db.insert(siteConfigTable).values({
       ...sampleContent.config,
     });
+  } else {
+    await db
+      .update(siteConfigTable)
+      .set({
+        birthdayPersonName:
+          sampleContent.config.birthdayPersonName,
+        birthdayDate:
+          sampleContent.config.birthdayDate,
+        introText:
+          sampleContent.config.introText,
+      })
+      .where(eq(siteConfigTable.id, config.id));
   }
-  const [memory] = await db.select({ id: memoriesTable.id }).from(memoriesTable).limit(1);
-  if (!memory) {
-    await db.insert(memoriesTable).values([...sampleContent.memories]);
+
+  // ─────────────────────────────────────────────
+  // MEMORIES
+  // Update existing memories by display order.
+  // This preserves their IDs and uploaded images.
+  // ─────────────────────────────────────────────
+  const existingMemories = await db
+    .select()
+    .from(memoriesTable)
+    .orderBy(asc(memoriesTable.displayOrder));
+
+  if (existingMemories.length === 0) {
+    await db
+      .insert(memoriesTable)
+      .values([...sampleContent.memories]);
+  } else {
+    for (
+      let i = 0;
+      i < sampleContent.memories.length;
+      i++
+    ) {
+      const sample =
+        sampleContent.memories[i];
+
+      const existing =
+        existingMemories[i];
+
+      if (!existing) {
+        await db
+          .insert(memoriesTable)
+          .values({
+            ...sample,
+            displayOrder: sample.displayOrder,
+          });
+
+        continue;
+      }
+
+      await db
+        .update(memoriesTable)
+        .set({
+          title: sample.title,
+          description: sample.description,
+          memoryDate: sample.memoryDate,
+          displayOrder: sample.displayOrder,
+          imageStorageKey: sample.imageStorageKey,
+        })
+        .where(
+          eq(
+            memoriesTable.id,
+            existing.id,
+          ),
+        );
+    }
   }
-  const [letter] = await db.select({ id: openWhenLettersTable.id }).from(openWhenLettersTable).limit(1);
-  if (!letter) {
-    await db.insert(openWhenLettersTable).values([...sampleContent.openWhen]);
+
+  // ─────────────────────────────────────────────
+  // OPEN WHEN LETTERS
+  // ─────────────────────────────────────────────
+  const existingOpenWhen = await db
+    .select()
+    .from(openWhenLettersTable)
+    .orderBy(
+      asc(openWhenLettersTable.displayOrder),
+    );
+
+  if (existingOpenWhen.length === 0) {
+    await db
+      .insert(openWhenLettersTable)
+      .values([...sampleContent.openWhen]);
+  } else {
+    for (
+      let i = 0;
+      i < sampleContent.openWhen.length;
+      i++
+    ) {
+      const sample =
+        sampleContent.openWhen[i];
+
+      const existing =
+        existingOpenWhen[i];
+
+      if (!existing) {
+        await db
+          .insert(openWhenLettersTable)
+          .values({
+            ...sample,
+            displayOrder: i,
+          });
+
+        continue;
+      }
+
+      await db
+        .update(openWhenLettersTable)
+        .set({
+          title: sample.title,
+          message: sample.message,
+          displayOrder: i,
+        })
+        .where(
+          eq(
+            openWhenLettersTable.id,
+            existing.id,
+          ),
+        );
+    }
   }
-  const [finalLetter] = await db.select({ id: finalLetterTable.id }).from(finalLetterTable).limit(1);
+
+  // ─────────────────────────────────────────────
+  // FINAL LETTER
+  // ─────────────────────────────────────────────
+  const [finalLetter] = await db
+    .select({
+      id: finalLetterTable.id,
+    })
+    .from(finalLetterTable)
+    .limit(1);
+
   if (!finalLetter) {
-    await db.insert(finalLetterTable).values({ letter: sampleContent.finalLetter });
+    await db
+      .insert(finalLetterTable)
+      .values({
+        letter: sampleContent.finalLetter,
+      });
+  } else {
+    await db
+      .update(finalLetterTable)
+      .set({
+        letter: sampleContent.finalLetter,
+      })
+      .where(
+        eq(
+          finalLetterTable.id,
+          finalLetter.id,
+        ),
+      );
   }
-  const [message] = await db.select({ id: birthdayMessageTable.id }).from(birthdayMessageTable).limit(1);
-  if (!message) await db.insert(birthdayMessageTable).values({ message: sampleContent.birthdayMessage });
+
+  // ─────────────────────────────────────────────
+  // BIRTHDAY MESSAGE
+  // ─────────────────────────────────────────────
+  const [message] = await db
+    .select({
+      id: birthdayMessageTable.id,
+    })
+    .from(birthdayMessageTable)
+    .limit(1);
+
+  if (!message) {
+    await db
+      .insert(birthdayMessageTable)
+      .values({
+        message:
+          sampleContent.birthdayMessage,
+      });
+  } else {
+    await db
+      .update(birthdayMessageTable)
+      .set({
+        message:
+          sampleContent.birthdayMessage,
+      })
+      .where(
+        eq(
+          birthdayMessageTable.id,
+          message.id,
+        ),
+      );
+  }
 }
 
 router.get("/content", requireAuth, async (req, res): Promise<void> => {

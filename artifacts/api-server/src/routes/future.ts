@@ -28,7 +28,7 @@ router.post("/future-letter", requireAuth, async (req, res): Promise<void> => {
     return;
   }
   const [config] = await db.select().from(siteConfigTable).orderBy(asc(siteConfigTable.id)).limit(1);
-  const birthday = config?.birthdayDate ?? "2026-12-14";
+  const birthday = config?.birthdayDate ?? "2026-09-23";
   const now = new Date();
   const target = new Date(`${birthday}T00:00:00`);
   if (target <= now) target.setFullYear(target.getFullYear() + 1);
