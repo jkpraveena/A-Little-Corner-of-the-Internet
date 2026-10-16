@@ -33,6 +33,6 @@ export const sampleContent = {
     { title: "Open when you can't sleep", message: "The night is allowed to be quiet. Put your phone down, breathe slowly, and remember that tomorrow is not asking for perfection.", displayOrder: 3 },
     { title: "Open when something amazing happens", message: "I knew you would get here. Tell me everything, including the tiny details.", displayOrder: 4 },
   ],
-  finalLetter: "Life is going to change a lot from here. Some things will work out exactly how you imagined, some won’t, and some of the best things will probably be the ones you never planned for.\n\nJust don’t forget to enjoy where you are while you’re busy thinking about where you’re going.\n\nWe’ve got a lot of memories behind us and hopefully a lot more ahead. Happy birthday, bro. Here’s to whatever comes next.",
+  finalLetter: "Life is going to change a lot from here. Some things will work out exactly how you imagined, some won’t, and some of the best things will probably be the ones you never planned for.\n\nJust don’t forget to enjoy where you are while you’re busy thinking about where you’re going.\n\nWe’ve got a lot of memories behind us and hopefully a lot more ahead. Happy birthday Vignesh. Here’s to whatever comes next.",
   birthdayMessage: "I hope this year gives you more of the days that make you feel completely yourself. You deserve the good surprises, the quiet wins, and all the ordinary moments that turn out to matter.",
 } as const;
